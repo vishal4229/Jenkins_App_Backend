@@ -3,10 +3,10 @@ import requests
 import time
 import json
 
-from .build_info import create_build_info
+from .build_info import CreateBuildInfo
 from .models import PushNotification,Developer
 from urllib3.exceptions import InsecureRequestWarning
-from version import FCM_KEY,USERNAME
+from jenkins.version import FCM_KEY,USERNAME
 # Suppress only the single warning from urllib3 needed.
 requests.packages.urllib3.disable_warnings(category=InsecureRequestWarning)
 
@@ -17,7 +17,7 @@ def start_notifications():
     while True:
         try:
             time.sleep(60)
-            build_data = create_build_info().call_jenkins(dev.jenkins_username, dev.build_token)
+            build_data = CreateBuildInfo().call_jenkins(dev.jenkins_username, dev.build_token)
             # build_data = {
             # 'current_build':[{'mfadmin':'QA','user':'vishal'},{'mfapplication':'QA','user':'vishal'}]
             # }
