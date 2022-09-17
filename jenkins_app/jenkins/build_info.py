@@ -7,21 +7,6 @@ import datetime
 from backports.zoneinfo import ZoneInfo
 from version import URL_LIST
 
-# url = 'https://jenkins-nprd.bfsgodirect.com/job/Pipeline-MFApplicationService/lastBuild/api/json'
-# url = 'https://jenkins-nprd.bfsgodirect.com/job/Pipeline-MFApplicationService/lastBuild/api/json'
-# url = 'https://jenkins-nprd.bfsgodirect.com/job/Pipeline-MFApplicationService/lastBuild/api/json'
-# url = 'https://jenkins-nprd.bfsgodirect.com/job/Pipeline-MFApplicationService/lastBuild/api/json'
-
-
-# response = requests.post(url, auth=(os.environ['build_username'], os.environ['build_token']))
-# print(response.json()['building'])
-# print(response.json()['actions'][0]['parameters'][2]['value'])
-# print(response.json()['actions'][1]['causes'][0]['userId'])
-# print(response.json()['result'])
-# print(time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(int(str(response.json()['timestamp'])[:-3]))))
-# print(response.json()['estimatedDuration'])
-# print(response.json()['duration'])
-
 class create_build_info():
     def __init__(self):
       self.urls = URL_LIST
