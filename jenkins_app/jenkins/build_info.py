@@ -8,7 +8,7 @@ import requests
 from jenkins.version import SERVER_URLS, JOB_NAMES
 
 
-class CreateBuildInfo():
+class CreateJobsBuildData():
     """
     Generate all jobs Build related Data by calling Jenkins api
     """    
@@ -97,10 +97,14 @@ class CreateBuildInfo():
 
         Returns:
             _type_: Dict
-        """        
+        """     
+        build_estimate = 3
         is_building = response['building']
         server = response['actions'][0]['parameters'][0]['value'] if index == 2 else response['actions'][0]['parameters'][2]['value']
-        server = 'QA' if server == 'NPQ' else 'UAT'
+        if server == 'NPQ':
+            server == 'QA'
+        elif server == 'NPU':
+            server = 'UAT'
         user = response['actions'][1]['causes'][0]['userId']
         build_result = str(response['result'])
         build_time, build_time_datetime = self.decode_build_time(response)
@@ -108,7 +112,7 @@ class CreateBuildInfo():
         if is_building == True:
             data['current_build'].append(
                 {JOB_NAMES[index]: server, 'user': user})
-            build_estimate = self.calculate_percent_value(
+            build_estimate,percent_value = self.calculate_percent_value(
                 build_time_datetime, estimatedDuration)
         else:
             percent_value = 0
@@ -135,7 +139,7 @@ class CreateBuildInfo():
             percent_value = max(0, int(total_second/estimatedDuration*100))
             build_estimate = min(
                 (estimatedDuration-total_second)/(100-percent_value), 5)
-        return build_estimate
+        return build_estimate,percent_value
 
     def decode_build_time(self, response):
         build_time = time.strftime(

@@ -4,21 +4,21 @@ import firebase_admin
 import requests
 from django.contrib.auth.hashers import check_password, make_password
 from django.http import JsonResponse
-from firebase_admin import credentials
+from firebase_admin import credentials,messaging
 from rest_framework.views import APIView
 
 from jenkins.models import Developer
 from jenkins.version import d, BUILD_URL, MOCK_DATA, MOCK_REQUIRED
 
-from .build_info import CreateBuildInfo
+from .build_info import CreateJobsBuildData
 from .models import PushNotification
-
+# import jenkins.push_notification
 logger = logging.getLogger(__name__)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
-# firebase_cred = credentials.Certificate(
-#     BASE_DIR+"/jenkins/mfteambuild-firebase-adminsdk-m2lom-e5e1a39810.json")
-# firebase_app = firebase_admin.initialize_app(firebase_cred)
+firebase_cred = credentials.Certificate(
+    BASE_DIR+"/jenkins/mfteambuild-firebase-adminsdk-m2lom-e5e1a39810.json")
+firebase_app = firebase_admin.initialize_app(firebase_cred)
 
 
 class CreateUser(APIView):
@@ -54,9 +54,6 @@ class LoginUser(APIView):
             print(e)
             return JsonResponse(data={'error': 'Error in getting response'}, status=500)
 
-    def get(self, request):
-        return JsonResponse(data={'success': "ok"}, status=200)
-
 
 class VersionInfo(APIView):
     def get(self, request):
@@ -67,7 +64,6 @@ class StartBuild(APIView):
     def post(self, request):
         started_build = []
         try:
-            print(request.data['build_data'])
             username = request.data['username']
             a = Developer.objects.filter(username=username).first()
             jenkins_username = a.jenkins_username
@@ -79,7 +75,6 @@ class StartBuild(APIView):
             server = 'QA' if serverqa else 'UAT'
             avail_build = get_current_build(
                 server, jenkins_username, build_token)
-            print(avail_build)
             if valueall:
                 for i in range(1, 5):
                     if i in avail_build:
@@ -107,7 +102,6 @@ class StartBuild(APIView):
             logger.exception("Error in StartBuild ")
             data = {'error': 'error in getting data for server'}
             return JsonResponse(data=data, status=400)
-        # print(response.status_code)
 
 
 class Build_Current_Info(APIView):
@@ -117,8 +111,9 @@ class Build_Current_Info(APIView):
             a = Developer.objects.filter(username=username).first()
             if MOCK_REQUIRED:
                 build_data = MOCK_DATA
+                return JsonResponse(data=build_data, status=200)
             elif a.jenkins_username and a.build_token:
-                build_obj = CreateBuildInfo(a.jenkins_username,a.build_token)
+                build_obj = CreateJobsBuildData(a.jenkins_username,a.build_token)
                 build_data = build_obj.call_jenkins()
                 return JsonResponse(data=build_data, status=200)
             else:
@@ -146,7 +141,7 @@ def build_start(username, build_token, server, service_name):
 
 
 def get_current_build(server, user, token):
-    build_obj = CreateBuildInfo(user, token)
+    build_obj = CreateJobsBuildData(user, token)
     build_data = build_obj.call_jenkins()
     # build_data = {
     #     'current_build':[{'mfadmin':'QA','user':'vishal'},{'mfapplication':'QA','user':'vishal'}]
@@ -168,15 +163,13 @@ def get_current_build(server, user, token):
 class pushNotifcations(APIView):
     def post(self, request):
         try:
-            print(request.data)
             username = request.data.get('username')
             token = request.data.get('token')
-            print(token)
             dev = Developer.objects.get(username=username)
             obj, created = PushNotification.objects.update_or_create(
                 developer=dev, notification_token=token)
-            # response = messaging.subscribe_to_topic(token, 'mf_team')
-            # print(response.success_count, 'tokens were subscribed successfully')
+            response = messaging.subscribe_to_topic(token, 'mf_team')
+            print(response.success_count, 'tokens were subscribed successfully')
         except Exception as e:
             print(e)
             data = {"error": "Error in service"}

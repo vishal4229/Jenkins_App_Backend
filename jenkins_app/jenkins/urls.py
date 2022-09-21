@@ -1,6 +1,6 @@
 from django.contrib import admin
 from django.urls import path
-from jenkins.views import CreateUser,LoginUser,VersionInfo,Build_Current_Info,StartBuild,pushNotifcations
+from jenkins.views import *
 
 urlpatterns = [
     path('create_user/', CreateUser.as_view()),

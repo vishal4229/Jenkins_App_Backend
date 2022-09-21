@@ -1,8 +1,8 @@
 from django.db import models
-
+from django.contrib.auth.models import AbstractUser
 # Create your models here.
 
-class Developer(models.Model):
+class Developer(AbstractUser):
     developer_id = models.AutoField(primary_key=True)
     username = models.CharField(max_length=20,blank=False,null=False,unique=True)
     password = models.CharField(max_length=500,blank=False,null=False)
@@ -11,5 +11,5 @@ class Developer(models.Model):
     created = models.DateTimeField(auto_now_add=True)
 
 class PushNotification(models.Model):
-    developer = models.ForeignKey(Developer,on_delete=models.CASCADE,blank=False,null=False)
+    developer = models.OneToOneField(Developer,on_delete=models.CASCADE,blank=False,null=False)
     notification_token = models.CharField(max_length=1000,blank=True,null=True)
